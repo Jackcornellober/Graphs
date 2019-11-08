@@ -1,6 +1,7 @@
 from room import Room
 from player import Player
 from world import World
+from util import Graph
 
 import random
 
@@ -22,7 +23,44 @@ world.printRooms()
 player = Player("Name", world.startingRoom)
 
 # Fill this out
+
 traversalPath = []
+
+graph = Graph()
+
+for x in roomGraph:
+    graph.add_vertex(x)
+
+for x in roomGraph:
+    for g in roomGraph[x][1]:
+        graph.add_edge(x,roomGraph[x][1][g])
+
+path = graph.adventure_solution(0)
+
+for index,i in enumerate(path):
+    if index < len(path) - 1:
+        if path[index] == path[index+1]:
+            path.pop(index)
+            print('popped')
+
+for index,i in enumerate(path):
+    if index < len(path) - 1:
+        current = i
+        after = path[index+1]
+
+        for q in roomGraph[current][1]:
+            if roomGraph[current][1][q] == after:
+                traversalPath.append(q)
+    else:
+        path.pop()
+
+    
+
+    
+
+print(graph.vertices)
+
+
 
 
 
@@ -43,9 +81,9 @@ else:
 
 
 
-#######
+######
 # UNCOMMENT TO WALK AROUND
-#######
+######
 # player.currentRoom.printRoomDescription(player)
 # while True:
 #     cmds = input("-> ").lower().split(" ")

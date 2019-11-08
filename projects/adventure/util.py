@@ -1,7 +1,28 @@
-"""
-Simple graph implementation
-"""
-from util import Stack, Queue  # These may come in handy
+class Queue():
+    def __init__(self):
+        self.queue = []
+    def enqueue(self, value):
+        self.queue.append(value)
+    def dequeue(self):
+        if self.size() > 0:
+            return self.queue.pop(0)
+        else:
+            return None
+    def size(self):
+        return len(self.queue)
+
+class Stack():
+    def __init__(self):
+        self.stack = []
+    def push(self, value):
+        self.stack.append(value)
+    def pop(self):
+        if self.size() > 0:
+            return self.stack.pop()
+        else:
+            return None
+    def size(self):
+        return len(self.stack)
 
 class Graph:
     """Represent a graph as a dictionary of vertices mapping labels to edges."""
@@ -46,6 +67,27 @@ class Graph:
                 for neighbor in self.vertices[v]:
                     q.enqueue(neighbor)
 
+
+
+
+    def dft_recursive(self, starting_vertex, visited = None, directions = None):
+        """
+        Print each vertex in depth-first order
+        beginning from starting_vertex.
+        This should be done using recursion.
+        """
+        if directions is None:
+            directions = []
+        if visited is None:
+            visited = set()
+        if starting_vertex not in visited:
+            print(starting_vertex)
+            visited.add(starting_vertex)
+            for neighbor in self.vertices[starting_vertex]:
+                if neighbor not in visited:
+                    self.dft_recursive(neighbor, visited)
+                    
+            
     def dft(self, starting_vertex):
         """
         Print each vertex in depth-first order
@@ -67,26 +109,7 @@ class Graph:
                 visited.add(v)
                 # Then add all of its neighbors to the top of the stack
                 for neighbor in self.vertices[v]:
-                    s.push(neighbor)
-
-
-    def dft_recursive(self, starting_vertex, visited = None):
-        """
-        Print each vertex in depth-first order
-        beginning from starting_vertex.
-        This should be done using recursion.
-        """
-        if visited is None:
-            visited = set()
-        if starting_vertex not in visited:
-            print(starting_vertex)
-            visited.add(starting_vertex)
-            for neighbor in self.vertices[starting_vertex]:
-                if neighbor not in visited:
-                    self.dft_recursive(neighbor, visited)
-                    
-            
-            
+                    s.push(neighbor)                    
 
 
     def bfs(self, starting_vertex, destination_vertex):
@@ -118,7 +141,6 @@ class Graph:
             # Dequeue the first vertex
             v = q.dequeue()
             # If that vertex has not been visited...
-            print(v)
             if v is not None:
                 if v[-1] not in visited:
                     # Mark it as visited
@@ -130,7 +152,82 @@ class Graph:
                         z = v[:]
                         z.append(neighbor)
                         q.enqueue(z)
+
+    def find_ancestor(self, starting_vertex):
+        q = Queue()
+        q.enqueue([starting_vertex])
+        # Create an empty Set to store visited vertices
+        visited = set()
+        earliest_ancestor = starting_vertex
+        longest_path = 1
+        # While the queue is not empty...
+        while q.size() > 0:
+            # Dequeue the first vertex
+            path = q.dequeue()
+            # If that vertex has not been visited...
+            print(path)
+            if path is not None:
+                    # Mark it as visited
+                    if len(path) == longest_path:
+                        if path[-1] < earliest_ancestor:
+                            earliest_ancestor = path[-1]
+                    if len(path) > longest_path:
+                        earliest_ancestor = path[-1]
+                        longest_path = len(path)
+                    visited.add(path[-1])
+                    # Then add all of its neighbors to the back of the queue
+                    for neighbor in self.vertices[path[-1]]:
+                        z = path[:]
+                        z.append(neighbor)
+                        q.enqueue(z)
                         print(q.queue)
+        print(earliest_ancestor)
+        return earliest_ancestor
+
+    def adventure_solution(self, starting_vertex):
+        """
+        Print each vertex in depth-first order
+        beginning from starting_vertex.
+        """
+        # Create an empty stack and push the starting vertex ID
+        s = Stack()
+        return_points = Stack()
+        s.push(starting_vertex)
+        directions = []
+        # Create a Set to store visited vertices
+        visited = set()
+        # While the stack is not empty...
+        while s.size() > 0:
+            # Pop the first vertex
+            v = s.pop()
+            # If that vertex has not been visited...
+            if v not in visited:
+                # Mark it as visited...
+                directions.append(v)
+                visited.add(v)
+                
+                # Then add all of its neighbors to the top of the stack
+            for neighbor in self.vertices[v]:
+                if neighbor not in visited:
+                    s.push(neighbor)
+            count = 0
+            for neighbor in self.vertices[v]:
+                if neighbor not in visited:
+                    count += 1
+            if count > 1:
+                return_points.push(v)
+                print(return_points.stack)
+            if count == 0:
+                if len(return_points.stack):
+                    backtrack = return_points.pop()
+                    print('backtracking to: ', backtrack, 'from ', v)
+                    print(f'adding {directions} and {self.bfs(v,backtrack)}')
+                    directions = directions + self.bfs(v,backtrack)
+                    s.push(backtrack)
+                    
+        print('final: ', directions)
+        return directions
+
 
     def dfs(self, starting_vertex, destination_vertex):
         """
@@ -160,90 +257,3 @@ class Graph:
                         z.append(neighbor)
                         s.push(z)
                         print(s.stack)
-
-
-
-
-
-if __name__ == '__main__':
-    graph = Graph()  # Instantiate your graph
-    # https://github.com/LambdaSchool/Graphs/blob/master/objectives/breadth-first-search/img/bfs-visit-order.png
-    graph.add_vertex(1)
-    graph.add_vertex(2)
-    graph.add_vertex(3)
-    graph.add_vertex(4)
-    graph.add_vertex(5)
-    graph.add_vertex(6)
-    graph.add_vertex(7)
-    graph.add_edge(5, 3)
-    graph.add_edge(6, 3)
-    graph.add_edge(7, 1)
-    graph.add_edge(4, 7)
-    graph.add_edge(1, 2)
-    graph.add_edge(7, 6)
-    graph.add_edge(2, 4)
-    graph.add_edge(3, 5)
-    graph.add_edge(2, 3)
-    graph.add_edge(4, 6)
-    
-
-    '''
-    Should print:
-        {1: {2}, 2: {3, 4}, 3: {5}, 4: {6, 7}, 5: {3}, 6: {3}, 7: {1, 6}}
-    '''
-    # print(graph.vertices)
-
-    '''
-    Valid DFT paths:
-        1, 2, 3, 5, 4, 6, 7
-        1, 2, 3, 5, 4, 7, 6
-        1, 2, 4, 7, 6, 3, 5
-        1, 2, 4, 6, 3, 5, 7
-    '''
-    # graph.dft(1)
-
-    '''
-    Valid BFT paths:
-        1, 2, 3, 4, 5, 6, 7
-        1, 2, 3, 4, 5, 7, 6
-        1, 2, 3, 4, 6, 7, 5
-        1, 2, 3, 4, 6, 5, 7
-        1, 2, 3, 4, 7, 6, 5
-        1, 2, 3, 4, 7, 5, 6
-        1, 2, 4, 3, 5, 6, 7
-        1, 2, 4, 3, 5, 7, 6
-        1, 2, 4, 3, 6, 7, 5
-        1, 2, 4, 3, 6, 5, 7
-        1, 2, 4, 3, 7, 6, 5
-        1, 2, 4, 3, 7, 5, 6
-    '''
-    # graph.bft(1)
-
-    '''
-    Valid DFT recursive paths:
-        1, 2, 3, 5, 4, 6, 7
-        1, 2, 3, 5, 4, 7, 6
-        1, 2, 4, 7, 6, 3, 5
-        1, 2, 4, 6, 3, 5, 7
-    '''
-    # graph.dft_recursive(1)
-    # print('second')
-    # graph.dft_recursive(1)
-
-    '''
-    Valid BFS path:
-        [1, 2, 4, 6]
-    '''
-
-    # print(graph.bfs(1, 6))
-    
-
-    '''
-    Valid DFS paths:
-        [1, 2, 4, 6]
-        [1, 2, 4, 7, 6]
-    '''
-    # print(graph.dfs(1, 6))
-    # print('pog')
-
-    print(graph.dft_recursive(1))
